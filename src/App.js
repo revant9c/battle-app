@@ -8,6 +8,7 @@ class App extends Component {
             data = [
                 ["The Lord of the Rings", "Tolkien", "English", "1944-1955", "150 million"],
                 ["Dream of Red Chamber", "Cao Xuequin", "Chinese", "1950-1952", "100 million"],
+                ["zebra", "Messi", "Spanish", "100-200", "1000 million"]
             ];
         return (
             <div>
