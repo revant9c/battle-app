@@ -65,15 +65,23 @@ class Excel extends Component {
         return (
             <div>
                 <table>
-                    <thead onDoubleClick={this.sortTableData}>
+                    <thead onClick={this.sortTableData}>
                         <tr>
                             {headers.map((title, headerId) => <th key={headerId}>{this.changeSortIcon(title, headerId)}</th> )}
                         </tr>
                     </thead>
-                    <tbody onClick={this.editTableData}>
+                    <tbody onDoubleClick={this.editTableData}>
                         {this.state.data.map((tRow, rowId) =>
                             <tr key={rowId}>
-                                {tRow.map((tData, tdId) => <td data-row={rowId} key={tdId}>{tData}</td>)}
+                                {
+                                    tRow.map((tData, tdId) => {
+                                        let edit = this.state.edit;
+                                        if (edit && edit.row === rowId && edit.cell === tdId) {
+                                            return <td data-row={rowId} key={tdId}><form><input type="text" value={tData}/></form></td>
+                                        }
+                                        return <td data-row={rowId} key={tdId}>{tData}</td>
+                                    })
+                                }
                             </tr>
                         )}
                     </tbody>
