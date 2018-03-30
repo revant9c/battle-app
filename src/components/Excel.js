@@ -13,6 +13,7 @@ class Excel extends Component {
         this.sortTableData = this.sortTableData.bind(this);
         this.changeSortIcon = this.changeSortIcon.bind(this);
         this.editTableData = this.editTableData.bind(this);
+        this.saveData = this.saveData.bind(this);
     }
 
     /**
@@ -59,6 +60,19 @@ class Excel extends Component {
         return title;
     }
 
+    saveData(event) {
+        event.preventDefault();
+        let input = event.target.firstElementChild,
+            data  = Array.from(this.state.data);
+
+        data[this.state.edit.row][this.state.edit.cell] = input.value;
+
+        this.setState({
+            edit: null,
+            data: data
+        })
+    }
+
     render () {
         const headers = this.props.headers;
 
@@ -75,11 +89,13 @@ class Excel extends Component {
                             <tr key={rowId}>
                                 {
                                     tRow.map((tData, tdId) => {
+                                        let content = tData;
                                         let edit = this.state.edit;
                                         if (edit && edit.row === rowId && edit.cell === tdId) {
-                                            return <td data-row={rowId} key={tdId}><form><input type="text" value={tData}/></form></td>
+                                            content = <form onSubmit={this.saveData}><input type="text" defaultValue={content} /></form>
+                                            return <td data-row={rowId} key={tdId}>{content}</td>
                                         }
-                                        return <td data-row={rowId} key={tdId}>{tData}</td>
+                                        return <td data-row={rowId} key={tdId}>{content}</td>
                                     })
                                 }
                             </tr>
