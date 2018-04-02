@@ -8,12 +8,14 @@ class Excel extends Component {
             data: props.data,
             sortBy: null,
             descending: false,
-            edit: null
+            edit: null,
+            search: false
         };
         this.sortTableData = this.sortTableData.bind(this);
         this.changeSortIcon = this.changeSortIcon.bind(this);
         this.editTableData = this.editTableData.bind(this);
         this.saveData = this.saveData.bind(this);
+        this.toggleSearch = this.toggleSearch.bind(this);
     }
 
     /**
@@ -30,7 +32,7 @@ class Excel extends Component {
         this.setState({
             data: data,
             sortBy: columnName,
-            descending: descending,
+            descending: descending
         })
     }
 
@@ -73,36 +75,68 @@ class Excel extends Component {
         })
     }
 
-    render () {
-        const headers = this.props.headers;
+    toggleSearch() {
 
+    }
+
+    render () {
         return (
             <div>
-                <table>
-                    <thead onClick={this.sortTableData}>
-                        <tr>
-                            {headers.map((title, headerId) => <th key={headerId}>{this.changeSortIcon(title, headerId)}</th> )}
-                        </tr>
-                    </thead>
-                    <tbody onDoubleClick={this.editTableData}>
-                        {this.state.data.map((tRow, rowId) =>
-                            <tr key={rowId}>
-                                {
-                                    tRow.map((tData, tdId) => {
-                                        let content = tData;
-                                        let edit = this.state.edit;
-                                        if (edit && edit.row === rowId && edit.cell === tdId) {
-                                            content = <form onSubmit={this.saveData}><input type="text" defaultValue={content} /></form>
-                                            return <td data-row={rowId} key={tdId}>{content}</td>
-                                        }
-                                        return <td data-row={rowId} key={tdId}>{content}</td>
-                                    })
-                                }
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+                {this._renderToolbar()}
+                {this._renderTable()}
             </div>
+        );
+    }
+
+    _renderSearch() {
+        const headers = this.props.headers;
+        if (!this.state.search) {
+            return null;
+        }
+
+        return (
+          <tr>
+              {headers.map((_ignore, id) => <td key={id}><input data-id={id} type="text" /></td>)}
+          </tr>
+        );
+    }
+
+    _renderToolbar() {
+        return (
+          <div>
+              <button onClick={this.toggleSearch}>Search</button>
+          </div>
+        );
+    }
+
+    _renderTable() {
+        const headers = this.props.headers;
+        return (
+            <table>
+                <thead onClick={this.sortTableData}>
+                    <tr>
+                        {headers.map((title, headerId) => <th key={headerId}>{this.changeSortIcon(title, headerId)}</th> )}
+                    </tr>
+                </thead>
+                <tbody onDoubleClick={this.editTableData}>
+                    {this._renderSearch()}
+                    {this.state.data.map((tRow, rowId) =>
+                        <tr key={rowId}>
+                            {
+                                tRow.map((tData, tdId) => {
+                                    let content = tData;
+                                    let edit = this.state.edit;
+                                    if (edit && edit.row === rowId && edit.cell === tdId) {
+                                        content = <form onSubmit={this.saveData}><input type="text" defaultValue={content} /></form>
+                                        return <td data-row={rowId} key={tdId}>{content}</td>
+                                    }
+                                    return <td data-row={rowId} key={tdId}>{content}</td>
+                                })
+                            }
+                        </tr>
+                    )}
+                </tbody>
+            </table>
         );
     }
 
