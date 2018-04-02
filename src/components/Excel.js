@@ -9,13 +9,15 @@ class Excel extends Component {
             sortBy: null,
             descending: false,
             edit: null,
-            search: false
+            search: false,
+            preSearchData: null
         };
         this.sortTableData = this.sortTableData.bind(this);
         this.changeSortIcon = this.changeSortIcon.bind(this);
         this.editTableData = this.editTableData.bind(this);
         this.saveData = this.saveData.bind(this);
         this.toggleSearch = this.toggleSearch.bind(this);
+        this.search = this.search.bind(this);
     }
 
     /**
@@ -62,6 +64,10 @@ class Excel extends Component {
         return title;
     }
 
+    /**
+     * Method to save data once you edit the table cell
+     * @param event
+     */
     saveData(event) {
         event.preventDefault();
         let input = event.target.firstElementChild,
@@ -75,8 +81,42 @@ class Excel extends Component {
         })
     }
 
+    /**
+     * Method to enable and disable search
+     */
     toggleSearch() {
+        if (this.state.search) {
+            this.setState({
+                data: this.preSearchData,
+                search: false
+            });
+            this.preSearchData = null;
+        } else {
+            this.preSearchData = this.state.data;
+            console.log(this.preSearchData);
+            this.setState({
+                search: true
+            })
+        }
 
+    }
+
+    /**
+     * Method for searching in the table
+     * @param event
+     */
+    search(event) {
+        let needle = event.target.value.toLowerCase(),
+            id, searchData;
+
+        if(!needle) {
+            this.setState({data: this.preSearchData});
+            return
+        }
+
+        id = event.target.dataset.id;
+        searchData = this.preSearchData.filter((row) => row[id].toString().toLowerCase().indexOf(needle) > -1);
+        this.setState({data: searchData});
     }
 
     render () {
@@ -88,6 +128,11 @@ class Excel extends Component {
         );
     }
 
+    /**
+     * Method to add input boxes for each td
+     * @returns {*}
+     * @private
+     */
     _renderSearch() {
         const headers = this.props.headers;
         if (!this.state.search) {
@@ -95,7 +140,7 @@ class Excel extends Component {
         }
 
         return (
-          <tr>
+          <tr onChange={this.search}>
               {headers.map((_ignore, id) => <td key={id}><input data-id={id} type="text" /></td>)}
           </tr>
         );
