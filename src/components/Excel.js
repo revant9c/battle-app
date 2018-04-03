@@ -12,12 +12,55 @@ class Excel extends Component {
             search: false,
             preSearchData: null
         };
+        this.log = [];
         this.sortTableData = this.sortTableData.bind(this);
         this.changeSortIcon = this.changeSortIcon.bind(this);
         this.editTableData = this.editTableData.bind(this);
         this.saveData = this.saveData.bind(this);
         this.toggleSearch = this.toggleSearch.bind(this);
         this.search = this.search.bind(this);
+        this.logSetState = this.logSetState.bind(this);
+        this.replay = this.replay.bind(this);
+    }
+
+    componentDidMount() {
+        document.onkeydown = (event) => {
+            if (event.altKey && event.shiftKey && event.keyCode === 82) {
+                this.replay();
+            }
+        }
+    }
+
+    /**
+     * This method will replay all the changes that happen in the state object
+     */
+    replay() {
+        if (this.log.length === 0) {
+            console.warn("No state to replay yet");
+            return;
+        }
+
+        let id = -1,
+            interval = setInterval(() => {
+                id++;
+                if (id === this.log.length - 1) {
+                    clearInterval(interval);
+                }
+                this.setState(this.log[id]);
+            }, 1000);
+
+    }
+
+    /**
+     * This method adds state to the log array
+     * @param newState
+     */
+    logSetState(newState) {
+        this.log.push(JSON.parse(JSON.stringify(
+            this.log.length === 0 ? this.state : newState
+        )));
+
+        this.setState(newState);
     }
 
     /**
@@ -31,7 +74,7 @@ class Excel extends Component {
 
         data.sort((a, b) => descending ? a[columnName] < b[columnName] ? 1 : -1 : a[columnName] > b[columnName] ? 1 : -1);
 
-        this.setState({
+        this.logSetState({
             data: data,
             sortBy: columnName,
             descending: descending
@@ -43,7 +86,7 @@ class Excel extends Component {
      * @param event
      */
     editTableData(event) {
-        this.setState({
+        this.logSetState({
             edit: {
                 row: parseInt(event.target.dataset.row, 10),
                 cell: event.target.cellIndex
@@ -75,7 +118,7 @@ class Excel extends Component {
 
         data[this.state.edit.row][this.state.edit.cell] = input.value;
 
-        this.setState({
+        this.logSetState({
             edit: null,
             data: data
         })
@@ -86,15 +129,14 @@ class Excel extends Component {
      */
     toggleSearch() {
         if (this.state.search) {
-            this.setState({
+            this.logSetState({
                 data: this.preSearchData,
                 search: false
             });
             this.preSearchData = null;
         } else {
             this.preSearchData = this.state.data;
-            console.log(this.preSearchData);
-            this.setState({
+            this.logSetState({
                 search: true
             })
         }
@@ -110,13 +152,13 @@ class Excel extends Component {
             id, searchData;
 
         if(!needle) {
-            this.setState({data: this.preSearchData});
+            this.logSetState({data: this.preSearchData});
             return
         }
 
         id = event.target.dataset.id;
         searchData = this.preSearchData.filter((row) => row[id].toString().toLowerCase().indexOf(needle) > -1);
-        this.setState({data: searchData});
+        this.logSetState({data: searchData});
     }
 
     render () {
@@ -149,7 +191,9 @@ class Excel extends Component {
     _renderToolbar() {
         return (
           <div>
-              <button onClick={this.toggleSearch}>Search</button>
+              <button onClick={this.toggleSearch}>{(this.state.search) ? "Start searching... " : "Search"}</button>
+              <button><a href="data.csv">Export CSV</a></button>
+              <button><a href="data.json">Export JSON</a></button>
           </div>
         );
     }
