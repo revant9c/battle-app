@@ -1,13 +1,17 @@
 import axios from 'axios';
 
-function getProfile(username, params) {
+let id = '69e50ddaefe071159942', //client id
+    sec =  '6bd09ecf935032f16c22a74f30eca660580235e3', //secret id
+    params = `?client_id=${id}&client_secret=${sec}`;
+
+function getProfile(username) {
     return axios.get(`https://api.github.com/users/${username}${params}`)
         .then(function(user) {
            return user.data;
         });
 }
 
-function getRepos(username, params) {
+function getRepos(username) {
     return axios.get(`https://api.github.com/users/${username}/repos${params}&per_page=100`)
 }
 
